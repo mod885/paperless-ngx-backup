@@ -1,6 +1,7 @@
 #!/bin/bash
 #########################################################################
 #Name: backup-docker-volumes.sh
+#https://www.laub-home.de/wiki/Docker_Backup_und_Restore_-_eine_kleine_Anleitung
 #Subscription: This Script backups docker volumes to a backup directory
 ##by A. Laub
 #andreas[-at-]laub-home.de
@@ -21,7 +22,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # set the variables
 
 # Where to store the Backup files?
-BACKUPDIR=/backup/volumes
+BACKUPDIR=/home/mod/paperless-ngx-backup/volumes
 
 # How many Days should a backup be available?
 DAYS=2
@@ -44,26 +45,29 @@ VOLUME=$(docker volume ls -q)
 # if you want to use memory limitation. Must be supported by the kernel.
 #MEMORYLIMIT="-m 35m"
 
+docker-compose pause
+
 ### Do the stuff
-echo -e "Start $TIMESTAMP Backup for Volumes:\n"
-if [ ! -d $BACKUPDIR ]; then
-	mkdir -p $BACKUPDIR
+echo -e "Start ${TIMESTAMP} Backup for Volumes:\n"
+if [ ! -d ${BACKUPDIR} ]; then
+        mkdir -p ${BACKUPDIR}
 fi
 
-for i in $VOLUME; do 
-	echo -e " Backup von Volume:\n  * $i"; 
-	docker run --rm \
-        -v $BACKUPDIR:/backup \
-        -v $i:/data:ro \
-	-e TIMESTAMP=$TIMESTAMP \
-	-e i=$i	${MEMORYLIMIT} \
-	--name volumebackup \
-        alpine sh -c "cd /data && /bin/tar -czf /backup/$i-$TIMESTAMP.tar.gz ."
-        #debian:stretch-slim bash -c "cd /data && /bin/tar -czf /backup/$i-$TIMESTAMP.tar.gz ."
-	# dont delete last old backups!
-        OLD_BACKUPS=$(ls -1 $BACKUPDIR/$i*.tar.gz |wc -l)
-	if [ $OLD_BACKUPS -gt $DAYS ]; then
-		find $BACKUPDIR -name "$i*.tar.gz" -daystart -mtime +$DAYS -delete
-	fi
+for i in ${VOLUME}; do 
+        echo -e " Backup von Volume:\n  * ${i}"; 
+        docker run --rm \
+        -v ${BACKUPDIR}:/backup \
+        -v ${i}:/data:ro \
+        -e TIMESTAMP=${TIMESTAMP} \
+        -e i=${i} ${MEMORYLIMIT} \
+        --name volumebackup \
+        alpine sh -c "cd /data && /bin/tar -czf /backup/${i}-${TIMESTAMP}.tar.gz ."
+        #debian:stretch-slim bash -c "cd /data && /bin/tar -czf /backup/${i}-${TIMESTAMP}.tar.gz ."
+        # dont delete last old backups!
+        OLD_BACKUPS=$(ls -1 ${BACKUPDIR}/${i}*.tar.gz |wc -l)
+        if [ ${OLD_BACKUPS} -gt ${DAYS} ]; then
+                find ${BACKUPDIR} -name "${i}*.tar.gz" -daystart -mtime +${DAYS} -delete
+        fi
 done
-echo -e "\n$TIMESTAMP Backup for Volumes completed\n"
+docker-compose unpause
+echo -e "\n${TIMESTAMP} Backup for Volumes completed\n"

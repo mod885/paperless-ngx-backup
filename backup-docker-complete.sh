@@ -46,7 +46,7 @@ COMPOSE=$(echo -e "${ALLPROJECTS}" | grep -v 'mailcow-dockerized')
 echo -e "Pause Compose Projects:\n"
 for i in ${COMPOSE}; do
         PROJECTNAME=${i##*/}
-		echo -e "  * Projektname: ${PROJECTNAME} \n  * Ordner: ${i}";		
+		echo -e "  * Projektname: ${PROJECTNAME} \n    * Ordner: ${i}";
         cd ${i}
 		docker-compose pause
 done
@@ -67,10 +67,10 @@ for i in ${COMPOSE}; do
 done
 
 cd ${ROOTBACKUPDIR}
-echo -e "Creating compressed file of volume and compose directory..."
-tar -czf ${ROOTBACKUPDIR}/paperless-ngx_${TIMESTAMP}.tar.gz .
-echo -e "\nMove Backup file to my mounted hdd (I do not want any backup on my raspberry)"
-mv "${ROOTBACKUPDIR}/paperless-ngx_${TIMESTAMP}.tar.gz" "/media/extreme/OneDriveSync/2FA & Backup/paperless-ngx/backups/"
+echo -e "\nCreating compressed file of volume and compose directory..."
+tar -czf "/media/extreme/OneDriveSync/2FA & Backup/paperless-ngx/backups/paperless-ngx_${TIMESTAMP}.tar.gz" .
+#echo -e "Move Backup file to my mounted hdd (I do not want any backup on my raspberry)"
+#mv "${ROOTBACKUPDIR}/paperless-ngx_${TIMESTAMP}.tar.gz" "/media/extreme/OneDriveSync/2FA & Backup/paperless-ngx/backups/"
 echo -e "Clean up local backup directory (I do not want any backup files on my raspberry)"
 find "${ROOTBACKUPDIR}" -name "*.tar.gz" -type f -delete
 echo -e "Clean up mounted hdd backup directory"

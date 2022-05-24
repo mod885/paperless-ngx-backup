@@ -23,13 +23,13 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # set the variables
 
 # Where to store the Backup files?
-BACKUPDIR=/home/mod/paperless-ngx-backup/compose
+BACKUPDIR=${ROOTBACKUPDIR}/compose
 
 # How many Days should a backup be available?
-DAYS=2
+DAYS=${DAYS}
 
 # Timestamp definition for the backupfiles (example: $(date +"%Y%m%d%H%M") = 20200124-2034)
-TIMESTAMP=$(date +"%Y%m%d%H%M")
+TIMESTAMP=${TIMESTAMP}
 
 # Which Docker Compose Project you want to backup?
 # Docker Compose Project pathes separated by space 
@@ -47,10 +47,10 @@ ALLPROJECTS=$(for i in ${ALLCONTAINER}; do docker inspect --format '{{ index .Co
 #COMPOSE=$(echo -e "${ALLPROJECTS}" | grep 'project1\|project2' | grep -v 'database')
 COMPOSE=$(echo -e "${ALLPROJECTS}" | grep -v 'mailcow-dockerized')
 
-docker-compose pause
-
 ### Do the stuff
 echo -e "Start ${TIMESTAMP} Backup for Docker Compose Projects:\n"
+
+#docker-compose pause
 
 if [ ! -d ${BACKUPDIR} ]; then
         mkdir -p ${BACKUPDIR}
@@ -58,7 +58,7 @@ fi
 
 for i in ${COMPOSE}; do
         PROJECTNAME=${i##*/}
-        echo -e " Backup von Compose Project:\n  * ${PROJECTNAME}";
+        echo -e " Backup von Compose Project:";
 		echo -e "  * Projektname: ${PROJECTNAME} \n  * Ordner: ${i}";
 		echo -e "  * Filename ${BACKUPDIR}/${PROJECTNAME}_${TIMESTAMP}"
         cd ${i}
@@ -69,5 +69,6 @@ for i in ${COMPOSE}; do
                 find ${BACKUPDIR} -name "${PROJECTNAME}*.tar.gz" -daystart -mtime +${DAYS} -delete
         fi
 done
-docker-compose unpause
+
+#docker-compose unpause
 echo -e "\n${TIMESTAMP} Backup for Compose Projects completed\n"

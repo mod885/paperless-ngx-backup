@@ -67,9 +67,14 @@ for i in ${COMPOSE}; do
 done
 
 cd ${ROOTBACKUPDIR}
+echo -e "Creating compressed file of volume and compose directory..."
 tar -czf ${ROOTBACKUPDIR}/paperless-ngx_${TIMESTAMP}.tar.gz .
 echo -e "\nMove Backup file to my mounted hdd (I do not want any backup on my raspberry)"
 mv "${ROOTBACKUPDIR}/paperless-ngx_${TIMESTAMP}.tar.gz" "/media/extreme/OneDriveSync/2FA & Backup/paperless-ngx/backups/"
-echo -e "Clean Up Backup Folders (I do not want any backup files on my raspberry)"
-#rm -f "${ROOTBACKUPDIR}/{*,.*}"
+echo -e "Clean up local backup directory (I do not want any backup files on my raspberry)"
 find "${ROOTBACKUPDIR}" -name "*.tar.gz" -type f -delete
+echo -e "Clean up mounted hdd backup directory"
+OLD_BACKUPS=$(ls -1 /media/extreme/OneDriveSync/2FA\ \&\ Backup/paperless-ngx/backups/*.tar.gz |wc -l)
+if [ ${OLD_BACKUPS} -gt ${DAYS} ]; then
+		find /media/extreme/OneDriveSync/2FA\ \&\ Backup/paperless-ngx/backups/ -name "*.tar.gz" -daystart -mtime +${DAYS} -delete
+fi
